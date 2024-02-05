@@ -5,9 +5,10 @@ import IconButton from "../components/UI/IconButton";
 import { GlobalStyles } from "../constants/style";
 import { ExpensesContext } from "../store/expense-context";
 import ExpenseForm from "../components/ManageExpense/ExpenseForm";
-import { deleteExpense, storeExpense, updateExpense } from "../util/http";
+import { deleteExpense, storeExpense, updateExpense } from "../util/http/expense";
 import LoadingOverlay from "../components/UI/LoadingOverlay";
 import ErrorOverlay from "../components/UI/ErrorOverlay";
+import { AuthContext } from "../store/auth-context";
 
 function ManageExpense({ route, navigation }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +21,9 @@ function ManageExpense({ route, navigation }) {
 
     const selectedExpense = expensesCtx.expenses.find(expense => expense.id === editedExpenseId);
 
+    const authCtx = useContext(AuthContext);
+    const authToken = authCtx.token;
+
     useLayoutEffect(() => {
         navigation.setOptions({
             title: isEditing ? 'Edit Expense' : 'Add Expense'
@@ -30,7 +34,7 @@ function ManageExpense({ route, navigation }) {
         setIsSubmitting(true);
 
         try {
-            await deleteExpense(editedExpenseId);
+            await deleteExpense(editedExpenseId, authToken);
 
             expensesCtx.deleteExpense(editedExpenseId);
 
@@ -52,9 +56,9 @@ function ManageExpense({ route, navigation }) {
             if (isEditing) {
                 expensesCtx.updateExpense(editedExpenseId, expenseData);
     
-                await updateExpense(editedExpenseId, expenseData);
+                await updateExpense(editedExpenseId, expenseData, authToken);
             } else {
-                const id = await storeExpense(expenseData);
+                const id = await storeExpense(expenseData, authToken);
                 expensesCtx.addExpense({ ...expenseData, id: id });
             }
     

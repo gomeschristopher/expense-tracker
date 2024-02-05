@@ -3,9 +3,10 @@ import { useContext, useEffect, useState } from "react";
 import ExpensesOutput from "../components/ExpensesOutput/ExpensesOutput";
 import { ExpensesContext } from "../store/expense-context";
 import { getDateMinusDays } from "../util/date";
-import { fetchExpenses } from "../util/http";
+import { fetchExpenses } from "../util/http/expense";
 import LoadingOverlay from "../components/UI/LoadingOverlay";
 import ErrorOverlay from "../components/UI/ErrorOverlay";
+import { AuthContext } from "../store/auth-context";
 
 function RecentExpenses() {
     const [isFetching, setIsFetching] = useState(true);
@@ -13,12 +14,15 @@ function RecentExpenses() {
 
     const expensesCtx = useContext(ExpensesContext);
 
+    const authCtx = useContext(AuthContext);
+    const authToken = authCtx.token;
+
     useEffect(() => {
         async function getExpenses() {
             setIsFetching(true);
 
             try {
-                const expenses = await fetchExpenses();
+                const expenses = await fetchExpenses(authToken);
                 expensesCtx.setExpenses(expenses)
             } catch (error) {
                 setError('Could not fetch expenses!');
